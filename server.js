@@ -1,8 +1,13 @@
 const express = require('express');
 const db = require('./models');
+const cors = require('cors');
 
 const app = express();
 const port = 3001;
+
+app.use(cors({
+     origin: 'http://localhost:3000'
+    }));
 
 app.get('/', (req, res) => {
     res.send('Hello World! The server is alive.')
