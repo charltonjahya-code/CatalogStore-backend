@@ -1,7 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const db = require('./models');
 const cors = require('cors');
-const bcrypt = require('bcrypt'); 
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken'); 
 
 const app = express();
 const port = 3001;
@@ -49,6 +51,42 @@ app.post('/register', async (req, res) => {
   } catch (error) {
     // handle errors (duplicate email etc.) — status 400
     res.status(400).json({ error: 'Registration failed' });
+  }
+});
+
+app.post('/login', async (req, res) => {
+  try {
+    // 1. get email and password from req.body
+    const { email, password } = req.body;
+
+    // 2. find the user by email (db.User.findOne)
+    //    if no user found, respond 401 "invalid credentials"
+    const user = await db.User.findOne({ where: { email } });
+    if (!user) {                                              // ← ADD: no user found
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // 3. compare the submitted password to the stored hash (bcrypt.compare)
+    //    if it doesn't match, respond 401 "invalid credentials"
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {                                    // ← ADD: wrong password
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // 4. password is correct → sign a JWT with the user's info
+    //    jwt.sign({ userId: user.id, role: user.role }, secret, { expiresIn: '1h' })
+    const token = jwt.sign(
+        { userId: user.id, role: user.role },   // payload: who they are
+        process.env.JWT_SECRET,                  // your secret key (from .env)
+        { expiresIn: '1h' }                      // token expires in 1 hour
+    );
+
+    // 5. send the token back
+    res.json({ token });
+
+  } catch (error) {
+    // respond 500 server error
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
