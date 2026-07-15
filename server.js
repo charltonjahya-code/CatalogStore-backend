@@ -3,7 +3,8 @@ const express = require('express');
 const db = require('./models');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken'); 
+const jwt = require('jsonwebtoken');
+const authMiddleware = require('./middleware/auth');
 
 const app = express();
 const port = 3001;
@@ -28,6 +29,10 @@ app.get('/products', async (req, res) => {
     // send an error: res.status(500).json({ error: 'something' })
     res.status(500).json({error: 'server error'});
   }
+});
+
+app.get('/me', authMiddleware, (req, res) => {
+  res.json({ user: req.user });
 });
 
 app.post('/register', async (req, res) => {
