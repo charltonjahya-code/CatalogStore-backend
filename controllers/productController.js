@@ -1,12 +1,9 @@
 const productService = require('../services/productService');
+const asyncHandler = require('../middleware/asyncHandler');
 
-async function getAllProducts(req, res) {
-    try {
-        const products = await productService.getAllProducts();
-        res.status(200).json(products);
-    } catch(error){
-        res.status(500).json({ error: 'Server error'});
-    }
-}
+const getAllProducts = asyncHandler(async (req, res) => {
+    const products = await productService.getAllProducts();
+    res.status(200).json(products);
+});
 
 module.exports = { getAllProducts };
