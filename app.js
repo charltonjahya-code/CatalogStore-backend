@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const authMiddleware = require('./middleware/auth');
 const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 const app = express();
 
@@ -12,21 +13,10 @@ app.use(cors({
      origin: 'http://localhost:3000'
     }));
 app.use(authRoutes);
+app.use(productRoutes);
 
 app.get('/', (req, res) => {
     res.send('Hello World! The server is alive.')
-});
-
-app.get('/products', async (req, res) => {
-  try {
-    // 1. fetch all products (await db.Product.findAll())
-    const products = await db.Product.findAll();
-    // 2. send them back (res.json(...))
-    res.json(products);
-  } catch (error) {
-    // send an error: res.status(500).json({ error: 'something' })
-    res.status(500).json({error: 'server error'});
-  }
 });
 
 app.get('/me', authMiddleware, (req, res) => {
